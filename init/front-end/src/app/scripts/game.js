@@ -140,8 +140,7 @@ export class GameComponent {
     setTimeout(
       // TODO #arrow-function: use arrow function instead.
       () => {
-        // TODO #spa: replace with './#score'
-        var scorePage = "./score.html";
+        var scorePage = "./#score";
         // TODO #template-literals:  use template literals (backquotes)
         window.location =
           `${scorePage}?name=${this._name}&size=${this._size}&time=${timeElapsedInSeconds}`;
