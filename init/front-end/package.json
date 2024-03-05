@@ -2,7 +2,7 @@
   "dependencies": {
     "colors": "^1.4.0"
   },
-  "name": "guillaume-meme-ory",
+  "name": "hvanheer-meme-ory",
   "version": "1.0.0",
   "description": "A memory game based on memes ¯\\\\(ツ)\\\\/¯.",
   "main": "index.js",
