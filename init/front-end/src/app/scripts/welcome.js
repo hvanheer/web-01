@@ -1,35 +1,26 @@
 // TODO #import-html: use ES default imports to import welcome.html as template
-// Import welcome.html using ES default imports
-import template from './welcome.html';
-
 // TODO #export-functions: remove the IIFE
-
-// Remove IIFE
-// TODO #export-functions: export function WelcomeComponent
-// TODO #class: use the ES6 class keyword
-/* class WelcomeComponent constructor  */
-export class WelcomeComponent {
-  // TODO #extends: call super(template)
-  constructor() {
-    super(template);
+(function () {
+  // TODO #export-functions: export function WelcomeComponent
+  // TODO #class: use the ES6 class keyword
+  /* class WelcomeComponent constructor  */
+  function WelcomeComponent() {
+    // TODO #extends: call super(template)
     // TODO #import-html: assign template to this.template
-    this.template = template;
   }
 
   // TODO #export-functions: remove this line
   // put component in global scope, to be runnable right from the HTML.
-  // Remove the following line:
-  // window.WelcomeComponent = WelcomeComponent;
-
+  window.WelcomeComponent = WelcomeComponent;
   // TODO #class: turn function into a method of WelcomeComponent
   /* method WelcomeComponent.init */
-  init() {
+  WelcomeComponent.prototype.init = function init() {
     var form = document.querySelector("form.form-signin");
 
     form.addEventListener(
       "submit",
       // TODO #arrow-function: use arrow function instead.
-      (event) => {
+      function (event) {
         event.preventDefault();
         if (form.checkValidity() === false) {
           event.stopPropagation();
@@ -38,19 +29,20 @@ export class WelcomeComponent {
           var name = event.srcElement.querySelector("#nickname").value;
           var size = parseInt(event.srcElement.querySelector("#size").value);
 
-          this._startGame(name, size);
+          _startGame(name, size);
         }
-      },
+      }.bind(this),
       false
     );
 
     return this;
-  }
+  };
 
   // TODO #class: turn function into a method of WelcomeComponent
-  _startGame(name, size) {
-    var gamePage = "./#game";
+  function _startGame(name, size) {
+    // TODO #spa: replace with './#game'
+    var gamePage = "./game.html";
     // TODO #template-literals:  use template literals (backquotes)
-    window.location = `${gamePage}?name=${name}&size=${size}`;
+    window.location = gamePage + "?name=" + name + "&size=" + size;
   }
-}
+})();

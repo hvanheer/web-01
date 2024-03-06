@@ -1,5 +1,4 @@
 // TODO #import-html: use ES default imports to import game.html as template
-import template from './game.html';
 
 var CARD_TEMPLATE = ""
   .concat('<main class="card-cmp">')
@@ -10,20 +9,24 @@ var CARD_TEMPLATE = ""
   .concat("</main>");
 
 // TODO #export-functions: remove the IIFE
-// Remove IIFE
-// TODO #export-functions: export function GameComponent
-// TODO #class: use the ES6 class keyword
-// TODO #extends: extend Component
-/* class GameComponent constructor */
-export class GameComponent {
-  // TODO #extends: call super(template)
-  constructor() {
-    super(template);
+(function () {
+  var environment = {
+    api: {
+      host: "http://localhost:8081",
+    },
+  };
+
+  // TODO #export-functions: export function GameComponent
+  // TODO #class: use the ES6 class keyword
+  // TODO #extends: extend Component
+  /* class GameComponent constructor */
+  function GameComponent() {
+    // TODO #extends: call super(template)
     // gather parameters from URL
     var params = parseUrl();
 
     // TODO #import-html: assign template to this.template
-    // save player name & game size
+    // save player name & game ize
     this._name = params.name;
     this._size = parseInt(params.size) || 9;
     this._flippedCard = null;
@@ -32,86 +35,86 @@ export class GameComponent {
 
   // TODO #export-functions: remove this line
   // put component in global scope, to be runnable right from the HTML.
-  // Remove the following line:
-  // window.GameComponent = GameComponent;
+  window.GameComponent = GameComponent;
 
   // TODO #class: turn function into a method of GameComponent
   /* method GameComponent.init */
-  init() {
+  GameComponent.prototype.init = function init() {
     // fetch the cards configuration from the server
     this.fetchConfig(
       // TODO #arrow-function: use arrow function instead.
-      (config) => {
+      function (config) {
         this._config = config;
         this._boardElement = document.querySelector(".cards");
 
         // create cards out of the config
         this._cards = [];
         // TODO #functional-programming: use Array.map() instead.
-        this._config.ids.map((id) => {
-          this._cards.push(new CardComponent(id));
-        });
+        for (var i in this._config.ids) {
+          this._cards[i] = new CardComponent(this._config.ids[i]);
+        }
 
         // TODO #functional-programming: use Array.forEach() instead.
         // TODO #let-const: replace var with let.
-        this._cards.forEach((card) => {
+        for (var i in this._cards) {
+          var card = this._cards[i];
+
           // TODO #let-const: extract function _appendCard (ie: copy its body here and remove the function)
           this._appendCard(card);
-        });
+        }
 
         this.start();
-      }
+      }.bind(this)
     );
-  }
-
+  };
   // TODO #class: turn function into a method of GameComponent
 
   /* method GameComponent._appendCard */
-  _appendCard(card) {
+  GameComponent.prototype._appendCard = function _appendCard(card) {
     this._boardElement.appendChild(card.getElement());
 
     card.getElement().addEventListener(
       "click",
       // TODO #arrow-function: use arrow function instead.
-      () => {
+      function () {
         this._flipCard(card);
-      }
+      }.bind(this)
     );
-  }
+  };
 
   // TODO #class: turn function into a method of GameComponent
   /* method GameComponent.start */
-  start() {
+  GameComponent.prototype.start = function start() {
     this._startTime = Date.now();
     var seconds = 0;
     // TODO #template-literals:  use template literals (backquotes)
     document.querySelector("nav .navbar-title").textContent =
-      `Player: ${this._name}. Elapsed time: ${seconds++}`;
+      "Player: " + this._name + ". Elapsed time: " + seconds++;
 
     this._timer = setInterval(
       // TODO #arrow-function: use arrow function instead.
-      () => {
+      function () {
         // TODO #template-literals:  use template literals (backquotes)
         document.querySelector("nav .navbar-title").textContent =
-          `Player: ${this._name}. Elapsed time: ${seconds++}`;
-      },
+          "Player: " + this._name + ". Elapsed time: " + seconds++;
+      }.bind(this),
       1000
     );
-  }
+  };
 
   // TODO #class: turn function into a method of GameComponent
   /* method GameComponent.fetchConfig */
-  fetchConfig(cb) {
+  GameComponent.prototype.fetchConfig = function fetchConfig(cb) {
     var xhr =
       typeof XMLHttpRequest != "undefined"
         ? new XMLHttpRequest()
         : new ActiveXObject("Microsoft.XMLHTTP");
 
     // TODO #template-literals:  use template literals (backquotes)
-    xhr.open("get", `${environment.api.host}/board?size=${this._size}`, true);
+    xhr.open("get", environment.api.host + "/board?size=" + this._size, true);
 
     // TODO #arrow-function: use arrow function instead.
-    xhr.onreadystatechange = () => {
+    xhr.onreadystatechange = function () {
       var status;
       var data;
       // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
@@ -127,11 +130,11 @@ export class GameComponent {
       }
     };
     xhr.send();
-  }
+  };
 
   // TODO #class: turn function into a method of GameComponent
   /* method GameComponent.goToScore */
-  goToScore() {
+  GameComponent.prototype.goToScore = function goToScore() {
     var timeElapsedInSeconds = Math.floor(
       (Date.now() - this._startTime) / 1000
     );
@@ -139,19 +142,26 @@ export class GameComponent {
 
     setTimeout(
       // TODO #arrow-function: use arrow function instead.
-      () => {
-        var scorePage = "./#score";
+      function () {
+        // TODO #spa: replace with './#score'
+        var scorePage = "./score.html";
         // TODO #template-literals:  use template literals (backquotes)
         window.location =
-          `${scorePage}?name=${this._name}&size=${this._size}&time=${timeElapsedInSeconds}`;
-      },
+          scorePage +
+          "?name=" +
+          this._name +
+          "&size=" +
+          this._size +
+          "&time=" +
+          timeElapsedInSeconds;
+      }.bind(this),
       750
     );
-  }
+  };
 
   // TODO #class: turn function into a method of GameComponent
   /* method GameComponent._flipCard */
-  _flipCard(card) {
+  GameComponent.prototype._flipCard = function _flipCard(card) {
     if (this._busy) {
       return;
     }
@@ -189,7 +199,7 @@ export class GameComponent {
         // wait a short amount of time before hiding both cards
         setTimeout(
           // TODO #arrow-function: use arrow function instead.
-          () => {
+          function () {
             // hide the cards
             this._flippedCard.flip();
             card.flip();
@@ -197,37 +207,34 @@ export class GameComponent {
 
             // reset flipped card for the next turn.
             this._flippedCard = null;
-          },
+          }.bind(this),
           500
         );
       }
     }
-  }
-}
+  };
 
-// TODO #card-component: Change images location to /app/components/game/card/assets/***.png
-// TODO #import-assets: use ES default import to import images.
-var CARDS_IMAGE = [
-  "/src/assets/cards/back.png",
-  "/src/assets/cards/card-0.png",
-  "/src/assets/cards/card-1.png",
-  "/src/assets/cards/card-2.png",
-  "/src/assets/cards/card-3.png",
-  "/src/assets/cards/card-4.png",
-  "/src/assets/cards/card-5.png",
-  "/src/assets/cards/card-6.png",
-  "/src/assets/cards/card-7.png",
-  "/src/assets/cards/card-8.png",
-  "/src/assets/cards/card-9.png",
-];
+  // TODO #card-component: Change images location to /app/components/game/card/assets/***.png
+  // TODO #import-assets: use ES default import to import images.
+  var CARDS_IMAGE = [
+    "/src/assets/cards/back.png",
+    "/src/assets/cards/card-0.png",
+    "/src/assets/cards/card-1.png",
+    "/src/assets/cards/card-2.png",
+    "/src/assets/cards/card-3.png",
+    "/src/assets/cards/card-4.png",
+    "/src/assets/cards/card-5.png",
+    "/src/assets/cards/card-6.png",
+    "/src/assets/cards/card-7.png",
+    "/src/assets/cards/card-8.png",
+    "/src/assets/cards/card-9.png",
+  ];
 
-// TODO #class: use the ES6 class keyword
-// TODO #extends: extends Component
-/* class CardComponent constructor */
-export class CardComponent {
-  // TODO #extends: call super(CARD_TEMPLATE)
-  constructor(id) {
-    super(CARD_TEMPLATE);
+  // TODO #class: use the ES6 class keyword
+  // TODO #extends: extends Component
+  /* class CardComponent constructor */
+  function CardComponent(id) {
+    // TODO #extends: call super(CARD_TEMPLATE)
     // is this card flipped?
     this._flipped = false;
     this.template = CARD_TEMPLATE;
@@ -247,26 +254,30 @@ export class CardComponent {
   }
 
   /* method CardComponent.getElement */
-  getElement() {
+  CardComponent.prototype.getElement = function getElement() {
     return this._elt;
-  }
+  };
 
   // TODO #class: turn function into a method of CardComponent
   /* method CardComponent.flip */
-  flip() {
+  CardComponent.prototype.flip = function flip() {
     this._imageElt.classList.toggle("flip");
     this._flipped = !this._flipped;
-  }
+  };
 
   // TODO #class: turn function into a method of CardComponent
   /* method CardComponent.equals */
-  equals(card) {
+  CardComponent.prototype.equals = function equals(card) {
     return card._id === this._id;
-  }
+  };
 
   // TODO #class: turn function into a method of CardComponent
   /* CardComponent.get flipped() */
-  get flipped() {
-    return this._flipped;
-  }
-}
+  Object.defineProperties(CardComponent.prototype, {
+    flipped: {
+      get: function () {
+        return this._flipped;
+      },
+    },
+  });
+})();

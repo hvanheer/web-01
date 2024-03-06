@@ -1,23 +1,6 @@
 {
   "dependencies": {
-    "colors": "^1.4.0"
-  },
-  "name": "hvanheer-meme-ory",
-  "version": "1.0.0",
-  "description": "A memory game based on memes ¯\\\\(ツ)\\\\/¯.",
-  "main": "index.js",
-  "devDependencies": {
-    "http-server": "^14.1.1"
-  },
-  "private": true,
-  "scripts": {
-    "start": "http-server -c-1",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": " /\\/web-01"
-  },
-  "author": "",
-  "license": "ISC"
+    "colors": "^1.4.0",
+    "http-server": "^14.0.0"
+  }
 }
