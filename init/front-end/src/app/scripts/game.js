@@ -14,199 +14,132 @@ import card7 from "/src/assets/cards/card-7.png";
 import card8 from "/src/assets/cards/card-8.png";
 import card9 from "/src/assets/cards/card-9.png";
 
-let CARD_TEMPLATE = ""
-  .concat('<main class="card-cmp">')
-  .concat('  <div class="card-wrapper">')
-  .concat('    <img class="card front-face" alt="card" />')
-  .concat('    <img class="card back-face" alt="card" />')
-  .concat("  </div>")
-  .concat("</main>");
+let CARD_TEMPLATE = `
+  <main class="card-cmp">
+    <div class="card-wrapper">
+      <img class="card front-face" alt="card" />
+      <img class="card back-face" alt="card" />
+    </div>
+  </main>`;
 
+let environment = {
+  api: {
+    host: "http://localhost:8081",
+  },
+};
 
-  let environment = {
-    api: {
-      host: "http://localhost:8081",
-    },
-  };
+export class GameComponent extends Component {
+  constructor() {
+    super(template);
+    let params = parseUrl();
 
-  // TODO #class: use the ES6 class keyword
-  // TODO #extends: extend Component
-  /* class GameComponent constructor */
-  export class GameComponent extends Component{
-    constructor(){
-      // TODO #extends: call super(template)
-      super(template)
-      // gather parameters from URL
-      let params = parseUrl();
+    this._name = params.name;
+    this._size = parseInt(params.size) || 9;
+    this._flippedCard = null;
+    this._matchedPairs = 0;
+    this.template = template;
+  }
 
-      // save player name & game size
-      this._name = params.name;
-      this._size = parseInt(params.size) || 9;
-      this._flippedCard = null;
-      this._matchedPairs = 0;
-      this.template = template;
-    }
-
-    // TODO #class: turn function into a method of GameComponent
-    /* method GameComponent.init */
-    init() {
-      // fetch the cards configuration from the server
-      this.fetchConfig(
-          // TODO #arrow-function: use arrow function instead.
-           (config)=> {
+  async init() {
+    return new Promise((resolve, reject) => {
+      this.fetchConfig()
+          .then(config => {
             this._config = config;
             this._boardElement = document.querySelector(".cards");
+            this._cards = this._config.ids.map(id => new CardComponent(id));
 
-            // create cards out of the config
-            this._cards = [];
-            // TODO #functional-programming: use Array.map() instead.
-             this._cards = this._config.ids.map(id => new CardComponent(id));
+            this._cards.forEach(card => {
+              this._boardElement.appendChild(card.getElement());
 
+              card.getElement().addEventListener("click", () => {
+                this._flipCard(card);
+              });
+            });
 
-             this._cards.forEach(card => {
-               this._boardElement.appendChild(card.getElement());
-
-               card.getElement().addEventListener("click", () => {
-                 this._flipCard(card);
-               });
-             });
-
-
-             this.start();
-          }
-      );
-    };
-
-    
-    // TODO #class: turn function into a method of GameComponent
-    /* method GameComponent.start */
-    start() {
-      this._startTime = Date.now();
-      let seconds = 0;
-      // TODO #template-literals:  use template literals (backquotes)
-      document.querySelector("nav .navbar-title").textContent =
-          `Player:   ${this._name}   Elapsed time:   ${seconds++}`;
-
-      this._timer = setInterval(
-          // TODO #arrow-function: use arrow function instead.
-           () => {
-            // TODO #template-literals:  use template literals (backquotes)
-            document.querySelector("nav .navbar-title").textContent =
-                `Player:   ${this._name}  Elapsed time:   ${seconds++}`;
-          },
-          1000
-      );
-    };
-
-    // TODO #class: turn function into a method of GameComponent
-    /* method GameComponent.fetchConfig */
-    fetchConfig(cb) {
-      let xhr =
-          typeof XMLHttpRequest != "undefined"
-              ? new XMLHttpRequest()
-              : new ActiveXObject("Microsoft.XMLHTTP");
-
-      // TODO #template-literals:  use template literals (backquotes)
-      xhr.open("get", `${environment.api.host}/board?size=${this._size}`, true);
-
-      // TODO #arrow-function: use arrow function instead.
-      xhr.onreadystatechange =  () => {
-        let status;
-        let data;
-        // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
-        if (xhr.readyState == 4) {
-          // `DONE`
-          status = xhr.status;
-          if (status == 200) {
-            data = JSON.parse(xhr.responseText);
-            cb(data);
-          } else {
-            throw new Error(status);
-          }
-        }
-      };
-      xhr.send();
-    };
-
-    // TODO #class: turn function into a method of GameComponent
-    /* method GameComponent.goToScore */
-    goToScore() {
-      let timeElapsedInSeconds = Math.floor(
-          (Date.now() - this._startTime) / 1000
-      );
-      clearInterval(this._timer);
-
-      setTimeout(
-          // TODO #arrow-function: use arrow function instead.
-           () => {
-            // TODO #spa: replace with './#score'
-            let scorePage = "./#score";
-            // TODO #template-literals:  use template literals (backquotes)
-            window.location =
-                `${scorePage}?name=${this._name}&size=${this._size}&time=${timeElapsedInSeconds}`;
-          },
-          750
-      );
-    };
-
-    // TODO #class: turn function into a method of GameComponent
-    /* method GameComponent._flipCard */
-    _flipCard(card) {
-      if (this._busy) {
-        return;
-      }
-
-      if (card.flipped) {
-        return;
-      }
-
-      // flip the card
-      card.flip();
-
-      // if flipped first card of the pair
-      if (!this._flippedCard) {
-        // keep this card flipped and wait for the second card of the pair
-        this._flippedCard = card;
-      } else {
-        // second card of the pair flipped...
-
-        // if cards are the same
-        if (card.equals(this._flippedCard)) {
-          this._flippedCard.matched = true;
-          card.matched = true;
-          this._matchedPairs += 1;
-
-          // reset flipped card for the next turn.
-          this._flippedCard = null;
-
-          if (this._matchedPairs === this._size) {
-            this.goToScore();
-          }
-        } else {
-          this._busy = true;
-
-          // cards did not match
-          // wait a short amount of time before hiding both cards
-          setTimeout(
-              // TODO #arrow-function: use arrow function instead.
-               ()=> {
-                // hide the cards
-                this._flippedCard.flip();
-                card.flip();
-                this._busy = false;
-
-                // reset flipped card for the next turn.
-                this._flippedCard = null;
-              },
-              500
-          );
-        }
-      }
-    };
-
+            this.start();
+            resolve(); // Resolve the promise when initialization is complete
+          })
+          .catch(error => {
+            reject(error); // Reject the promise if there's an error fetching the config
+          });
+    });
   }
-  // TODO #card-component: Change images location to /app/components/game/card/assets/***.png
-  // TODO #import-assets: use ES default import to import images.
+
+  start() {
+    this._startTime = Date.now();
+    let seconds = 0;
+    document.querySelector("nav .navbar-title").textContent =
+        `Player:   ${this._name}   Elapsed time:   ${seconds++}`;
+
+    this._timer = setInterval(() => {
+      document.querySelector("nav .navbar-title").textContent =
+          `Player:   ${this._name}  Elapsed time:   ${seconds++}`;
+    }, 1000);
+  }
+
+  async fetchConfig() {
+    try {
+      const response = await fetch(`${environment.api.host}/board?size=${this._size}`);
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      return await response.json();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  goToScore() {
+    let timeElapsedInSeconds = Math.floor(
+        (Date.now() - this._startTime) / 1000
+    );
+    clearInterval(this._timer);
+
+    setTimeout(() => {
+      let scorePage = "./#score";
+      window.location =
+          `${scorePage}?name=${this._name}&size=${this._size}&time=${timeElapsedInSeconds}`;
+    }, 750);
+  };
+
+  _flipCard(card) {
+    if (this._busy) {
+      return;
+    }
+
+    if (card.flipped) {
+      return;
+    }
+
+    card.flip();
+
+    if (!this._flippedCard) {
+      this._flippedCard = card;
+    } else {
+      if (card.equals(this._flippedCard)) {
+        this._flippedCard.matched = true;
+        card.matched = true;
+        this._matchedPairs += 1;
+
+        this._flippedCard = null;
+
+        if (this._matchedPairs === this._size) {
+          this.goToScore();
+        }
+      } else {
+        this._busy = true;
+
+        setTimeout(() => {
+          this._flippedCard.flip();
+          card.flip();
+          this._busy = false;
+          this._flippedCard = null;
+        }, 500);
+      }
+    }
+  };
+}
+
 let CARDS_IMAGE = [
   back,
   card0,
@@ -221,53 +154,35 @@ let CARDS_IMAGE = [
   card9,
 ];
 
-// TODO #class: use the ES6 class keyword
-  // TODO #extends: extends Component
-  /* class CardComponent constructor */
-  class CardComponent extends Component {
-    constructor(id){ //not sure about id here
-      // TODO #extends: call super(CARD_TEMPLATE)
-      super(CARD_TEMPLATE)
-      // is this card flipped?
-      this._flipped = false;
-      this.template = CARD_TEMPLATE;
-
-      // has the matching card has been discovered already?
-      this.matched = false;
-
-      this._elt = document.createElement("div");
-      this._elt.innerHTML = this.template;
-      this._elt = this._elt.firstElementChild;
-      this._id = id;
-
-      this._imageElt = this.getElement().querySelector(".card-wrapper");
-      this._imageElt.querySelector("img.front-face").src =
-          CARDS_IMAGE[this._id + 1];
-      this._imageElt.querySelector("img.back-face").src = CARDS_IMAGE[0];
-    }
-
-    /* method CardComponent.getElement */
-    getElement() {
-      return this._elt;
-    };
-
-    // TODO #class: turn function into a method of CardComponent
-    /* method CardComponent.flip */
-    flip() {
-      this._imageElt.classList.toggle("flip");
-      this._flipped = !this._flipped;
-    };
-
-    // TODO #class: turn function into a method of CardComponent
-    /* method CardComponent.equals */
-    equals(card) {
-      return card._id === this._id;
-    };
-
-    // TODO #class: turn function into a method of CardComponent
-    /* CardComponent.get flipped() */
-    get flipped(){
-      return this._flipped;
-    }
-
+class CardComponent extends Component {
+  constructor(id) {
+    super(CARD_TEMPLATE);
+    this._flipped = false;
+    this.template = CARD_TEMPLATE;
+    this._elt = document.createElement("div");
+    this._elt.innerHTML = this.template;
+    this._elt = this._elt.firstElementChild;
+    this._id = id;
+    this._imageElt = this.getElement().querySelector(".card-wrapper");
+    this._imageElt.querySelector("img.front-face").src =
+        CARDS_IMAGE[this._id + 1];
+    this._imageElt.querySelector("img.back-face").src = CARDS_IMAGE[0];
   }
+
+  getElement() {
+    return this._elt;
+  };
+
+  flip() {
+    this._imageElt.classList.toggle("flip");
+    this._flipped = !this._flipped;
+  };
+
+  equals(card) {
+    return card._id === this._id;
+  };
+
+  get flipped() {
+    return this._flipped;
+  }
+}
