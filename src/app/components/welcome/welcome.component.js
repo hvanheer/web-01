@@ -1,6 +1,8 @@
-// TODO #import-html: use ES default imports to import welcome.html as template
-import template from "../views/welcome.html";
-import { Component } from "./component";
+// TODO #import-html: use ES default imports to import welcome.component.html as template
+import template from "./welcome.component.html";
+import { Component } from "../../../../init/front-end/src/app/scripts/component";
+import "./welcome.component.css";
+
 
 
   // TODO #class: use the ES6 class keyword

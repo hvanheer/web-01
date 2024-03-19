@@ -1,8 +1,11 @@
-import { parseUrl } from "./utils";
-import { Component } from "./component";
-import template from "../views/score.html";
+import { parseUrl } from "../../../../init/front-end/src/app/scripts/utils";
+import { Component } from "../../../../init/front-end/src/app/scripts/component";
+import template from "./score.component.html";
 
-// TODO #import-html: use ES default imports to import game.html as template
+import "./score.component.css";
+
+
+// TODO #import-html: use ES default imports to import game.component.html as template
 
   // TODO #class: use the ES6 class keyword
   /* class ScoreComponent constructor */
